@@ -1,0 +1,655 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>Grateful Spaces Studio</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant:ital,wght@0,300;0,400;0,600;1,300&family=Spectral:ital,wght@0,300;0,400;0,500;1,300&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --void:      #0E0D0B;
+    --wood:      #C4A574;
+    --grain:     #8B6F47;
+    --bone:      #E8DCC4;
+    --concrete:  #5C5449;
+    --dim:       #3A352E;
+
+    --display: 'Cormorant', Georgia, serif;
+    --body:    'Spectral', Georgia, serif;
+    --mono:    'IBM Plex Mono', ui-monospace, monospace;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  html { -webkit-text-size-adjust: 100%; }
+
+  body {
+    background: var(--void);
+    color: var(--bone);
+    font-family: var(--body);
+    font-weight: 300;
+    line-height: 1.65;
+    min-height: 100vh;
+    padding: 4rem 1.5rem 8rem;
+    /* faint vertical grain, the wood's own line */
+    background-image: repeating-linear-gradient(
+      90deg,
+      transparent 0 3px,
+      rgba(196,165,116,0.012) 3px 4px
+    );
+  }
+
+  .wrap { max-width: 46rem; margin: 0 auto; }
+
+  /* ---------- masthead ---------- */
+
+  header { margin-bottom: 4.5rem; }
+
+  .studio {
+    font-family: var(--mono);
+    font-size: 0.66rem;
+    letter-spacing: 0.34em;
+    text-transform: uppercase;
+    color: var(--concrete);
+    margin-bottom: 2rem;
+  }
+
+  h1 {
+    font-family: var(--display);
+    font-weight: 300;
+    font-size: clamp(2.6rem, 8vw, 4.4rem);
+    line-height: 0.95;
+    letter-spacing: -0.02em;
+    color: var(--wood);
+    margin-bottom: 1.5rem;
+  }
+
+  h1 em { font-style: italic; color: var(--bone); }
+
+  .sub {
+    font-size: 1.02rem;
+    color: var(--concrete);
+    max-width: 34rem;
+  }
+
+  .sub strong { color: var(--wood); font-weight: 400; }
+
+  /* ---------- the box ---------- */
+
+  .field { margin-bottom: 1.25rem; }
+
+  label {
+    display: block;
+    font-family: var(--mono);
+    font-size: 0.64rem;
+    letter-spacing: 0.28em;
+    text-transform: uppercase;
+    color: var(--concrete);
+    margin-bottom: 0.85rem;
+  }
+
+  textarea {
+    width: 100%;
+    min-height: 22rem;
+    background: rgba(196,165,116,0.03);
+    border: 1px solid var(--dim);
+    border-radius: 0;
+    color: var(--bone);
+    font-family: var(--body);
+    font-size: 1rem;
+    font-weight: 300;
+    line-height: 1.8;
+    padding: 1.5rem;
+    resize: vertical;
+    transition: border-color 0.25s;
+  }
+
+  textarea::placeholder { color: #2E2A25; font-style: italic; }
+  textarea:focus { outline: none; border-color: var(--grain); }
+  textarea:focus-visible { outline: 2px solid var(--wood); outline-offset: 2px; }
+
+  .meter {
+    display: flex;
+    justify-content: space-between;
+    font-family: var(--mono);
+    font-size: 0.66rem;
+    color: var(--dim);
+    margin-top: 0.6rem;
+  }
+
+  .meter .ready { color: var(--grain); }
+
+  .controls {
+    display: flex;
+    gap: 1.5rem;
+    align-items: flex-end;
+    flex-wrap: wrap;
+    margin-top: 2rem;
+  }
+
+  select {
+    background: transparent;
+    border: 1px solid var(--dim);
+    border-radius: 0;
+    color: var(--bone);
+    font-family: var(--mono);
+    font-size: 0.8rem;
+    padding: 0.85rem 1rem;
+  }
+  select:focus-visible { outline: 2px solid var(--wood); outline-offset: 2px; }
+
+  button {
+    background: var(--wood);
+    border: none;
+    border-radius: 0;
+    color: var(--void);
+    cursor: pointer;
+    font-family: var(--mono);
+    font-size: 0.74rem;
+    font-weight: 500;
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+    padding: 1rem 2.5rem;
+    transition: background 0.2s;
+  }
+
+  button:hover:not(:disabled) { background: var(--bone); }
+  button:disabled { background: var(--dim); color: var(--concrete); cursor: default; }
+  button:focus-visible { outline: 2px solid var(--bone); outline-offset: 3px; }
+
+  .ghost {
+    background: transparent;
+    border: 1px solid var(--dim);
+    color: var(--concrete);
+    padding: 0.7rem 1.4rem;
+    font-size: 0.66rem;
+  }
+  .ghost:hover:not(:disabled) { background: transparent; border-color: var(--grain); color: var(--wood); }
+
+  .err {
+    border-left: 2px solid #8B3A2F;
+    color: #C87A6B;
+    font-size: 0.9rem;
+    margin-top: 1.5rem;
+    padding-left: 1rem;
+  }
+
+  /* ---------- working ---------- */
+
+  #working { display: none; padding: 5rem 0; text-align: center; }
+
+  .cutting {
+    font-family: var(--mono);
+    font-size: 0.68rem;
+    letter-spacing: 0.3em;
+    text-transform: uppercase;
+    color: var(--concrete);
+  }
+
+  .kerf {
+    width: 1px;
+    height: 0;
+    background: var(--wood);
+    margin: 2.5rem auto 0;
+    animation: cut 2.4s ease-in-out infinite;
+  }
+
+  @keyframes cut {
+    0%, 100% { height: 0; opacity: 0; }
+    50%      { height: 5rem; opacity: 1; }
+  }
+
+  /* ---------- the pole ---------- */
+
+  #out { display: none; }
+
+  .rule {
+    border-top: 1px solid var(--dim);
+    margin: 4.5rem 0 2.5rem;
+    padding-top: 1.25rem;
+  }
+
+  .rule span {
+    font-family: var(--mono);
+    font-size: 0.64rem;
+    letter-spacing: 0.28em;
+    text-transform: uppercase;
+    color: var(--concrete);
+  }
+
+  .fig {
+    border-left: 1px solid var(--dim);
+    margin-left: 1.5rem;
+    padding: 0 0 2.25rem 2rem;
+    position: relative;
+  }
+
+  .fig::before {
+    content: '';
+    position: absolute;
+    left: -3.5px;
+    top: 0.6rem;
+    width: 6px;
+    height: 6px;
+    background: var(--wood);
+  }
+
+  .fig:last-child { border-left-color: transparent; padding-bottom: 0; }
+
+  .slot {
+    font-family: var(--mono);
+    font-size: 0.62rem;
+    color: var(--dim);
+    letter-spacing: 0.1em;
+  }
+
+  .name {
+    font-family: var(--display);
+    font-size: 1.9rem;
+    font-weight: 400;
+    letter-spacing: 0.02em;
+    color: var(--wood);
+    line-height: 1.15;
+    margin: 0.15rem 0 0.4rem;
+  }
+
+  .art {
+    font-family: var(--mono);
+    font-size: 0.68rem;
+    color: var(--concrete);
+    letter-spacing: 0.05em;
+    margin-bottom: 0.5rem;
+  }
+
+  .means { font-size: 0.95rem; color: var(--bone); opacity: 0.75; }
+
+  .why {
+    font-size: 0.85rem;
+    color: var(--concrete);
+    font-style: italic;
+    margin-top: 0.4rem;
+  }
+
+  /* ---------- the signature: the void ---------- */
+
+  .fig.void-fig::before { background: transparent; box-shadow: inset 0 0 0 1px var(--grain); }
+
+  .void-cut {
+    background:
+      radial-gradient(ellipse at 50% 45%, #000 0%, #000 55%, transparent 78%);
+    border: 1px solid var(--dim);
+    height: 11rem;
+    margin: 0.75rem 0 1rem;
+    position: relative;
+    overflow: hidden;
+  }
+
+  /* light passing through from behind */
+  .void-cut::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(180deg,
+      rgba(196,165,116,0.14) 0%,
+      transparent 30%,
+      transparent 70%,
+      rgba(196,165,116,0.06) 100%);
+    pointer-events: none;
+  }
+
+  .void-cut span {
+    position: absolute;
+    bottom: 0.7rem;
+    left: 0.9rem;
+    font-family: var(--mono);
+    font-size: 0.58rem;
+    letter-spacing: 0.24em;
+    text-transform: uppercase;
+    color: var(--grain);
+  }
+
+  .void-note {
+    font-family: var(--display);
+    font-style: italic;
+    font-size: 1.15rem;
+    color: var(--grain);
+  }
+
+  /* ---------- contact / bands ---------- */
+
+  .line {
+    font-family: var(--mono);
+    font-size: 0.78rem;
+    color: var(--concrete);
+    padding: 0.5rem 0;
+    border-bottom: 1px solid rgba(58,53,46,0.4);
+  }
+  .line b { color: var(--wood); font-weight: 500; }
+
+  /* ---------- plaque ---------- */
+
+  .plaque {
+    border-left: 2px solid var(--grain);
+    padding: 0.5rem 0 0.5rem 2rem;
+    font-family: var(--display);
+    font-size: 1.3rem;
+    font-weight: 300;
+    line-height: 1.75;
+    color: var(--bone);
+    white-space: pre-wrap;
+  }
+
+  .uncut {
+    border: 1px dashed var(--dim);
+    padding: 1.5rem;
+    color: var(--concrete);
+    font-style: italic;
+  }
+
+  /* ---------- prompts ---------- */
+
+  pre {
+    background: rgba(196,165,116,0.03);
+    border: 1px solid var(--dim);
+    color: var(--concrete);
+    font-family: var(--mono);
+    font-size: 0.7rem;
+    line-height: 1.6;
+    margin-bottom: 0.75rem;
+    max-height: 16rem;
+    overflow: auto;
+    padding: 1.25rem;
+    white-space: pre-wrap;
+  }
+
+  .gap-note {
+    font-size: 0.9rem;
+    color: var(--concrete);
+    margin-bottom: 1rem;
+  }
+
+  .unmapped-item { padding: 0.75rem 0; border-bottom: 1px solid rgba(58,53,46,0.4); }
+  .unmapped-item p { font-size: 0.95rem; }
+  .unmapped-item i { color: var(--concrete); font-size: 0.85rem; }
+
+  /* ---------- yours ---------- */
+
+  .yours {
+    border: 1px solid var(--dim);
+    padding: 2rem;
+    margin-top: 4rem;
+  }
+
+  .yours h3 {
+    font-family: var(--display);
+    font-size: 1.5rem;
+    font-weight: 400;
+    color: var(--wood);
+    margin-bottom: 0.75rem;
+  }
+
+  .yours p { font-size: 0.95rem; color: var(--concrete); margin-bottom: 1.5rem; }
+
+  .btns { display: flex; gap: 0.75rem; flex-wrap: wrap; }
+
+  footer {
+    margin-top: 5rem;
+    padding-top: 1.5rem;
+    border-top: 1px solid var(--dim);
+    font-family: var(--mono);
+    font-size: 0.64rem;
+    line-height: 2;
+    color: var(--dim);
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    * { animation: none !important; transition: none !important; }
+    .kerf { height: 5rem; opacity: 1; }
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header>
+    <div class="studio">Grateful Spaces Studio · North Dakota</div>
+    <h1>Tell it once.<br><em>Get the pole.</em></h1>
+    <p class="sub">
+      Type your life into the box. The studio's language reads it and returns a blueprint —
+      figures, poses, what touches what, and the plaque. <strong>Your story is never
+      stored.</strong> It exists for as long as this takes and then it's gone. What you do
+      with the blueprint is yours to decide.
+    </p>
+  </header>
+
+  <main id="form">
+    <div class="field">
+      <label for="story">Your story</label>
+      <textarea id="story" placeholder="Start anywhere. Don't clean it up — the language reads what happened, not how it's told. The people, the years, the collapses, the luck, what was taken, what you're still waiting on."></textarea>
+      <div class="meter">
+        <span id="count">0 characters</span>
+        <span id="need">200 minimum</span>
+      </div>
+    </div>
+
+    <div class="controls">
+      <div>
+        <label for="height">Pole height</label>
+        <select id="height">
+          <option value="6">6 feet — 4 figures</option>
+          <option value="8">8 feet — 5 figures</option>
+          <option value="10">10 feet — 7 figures</option>
+          <option value="12" selected>12 feet — 8 figures</option>
+        </select>
+      </div>
+      <button id="go" disabled>Create</button>
+    </div>
+
+    <div class="err" id="err" style="display:none"></div>
+  </main>
+
+  <div id="working">
+    <div class="cutting">Reading · Mapping · Compressing</div>
+    <div class="kerf"></div>
+  </div>
+
+  <div id="out"></div>
+
+  <footer>
+    Kiln-dried woods · hand carved in North Dakota<br>
+    Your story passes through a language model to be read. Nothing is written to disk.
+  </footer>
+</div>
+
+<script>
+const $ = (id) => document.getElementById(id);
+const MIN = 200;
+let pole = null, carve = null;
+
+const esc = (s) => String(s ?? '').replace(/[&<>"]/g, (c) =>
+  ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+
+$('story').addEventListener('input', (e) => {
+  const n = e.target.value.trim().length;
+  $('count').textContent = n.toLocaleString() + ' characters';
+  const ok = n >= MIN;
+  $('go').disabled = !ok;
+  $('need').textContent = ok ? 'ready' : (MIN - n) + ' more';
+  $('need').className = ok ? 'ready' : '';
+});
+
+$('go').addEventListener('click', async () => {
+  const story = $('story').value.trim();
+  const height = Number($('height').value);
+
+  $('err').style.display = 'none';
+  $('form').style.display = 'none';
+  $('working').style.display = 'block';
+  $('out').style.display = 'none';
+
+  try {
+    const r = await fetch('/api/create', {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({ story, height }),
+    });
+    const data = await r.json();
+    if (!r.ok) throw new Error(data.error || 'The parser failed.');
+
+    pole = data.pole;
+    carve = data.carve;
+    render();
+  } catch (e) {
+    $('working').style.display = 'none';
+    $('form').style.display = 'block';
+    $('err').textContent = e.message;
+    $('err').style.display = 'block';
+  }
+});
+
+function rule(label) {
+  return '<div class="rule"><span>' + esc(label) + '</span></div>';
+}
+
+function figureBlock(f) {
+  if (f.figure === 'EMPTY_FORM') {
+    return '<div class="fig void-fig">'
+      + '<div class="slot">' + f.slot + '</div>'
+      + '<div class="name">The Empty Form</div>'
+      + '<div class="void-cut"><span>light passes through</span></div>'
+      + (f.represents ? '<div class="void-note">' + esc(f.represents) + '</div>' : '')
+      + '<div class="why">Nothing reaches back.</div>'
+      + '</div>';
+  }
+
+  const art = [f.gaze, f.limbs, f.mouth].filter(Boolean).join(' · ');
+  const cel = [
+    f.sun_rays ? f.sun_rays + ' rays' : null,
+    f.moon_phase, f.moon_horns ? 'horns ' + f.moon_horns : null, f.face,
+  ].filter(Boolean).join(' · ');
+
+  return '<div class="fig">'
+    + '<div class="slot">' + f.slot + '</div>'
+    + '<div class="name">' + esc(f.figure.replace(/_/g, ' ').toLowerCase()) + '</div>'
+    + (f.pose ? '<div class="art">' + esc(f.pose) + '</div>' : '')
+    + (art ? '<div class="art">' + esc(art) + '</div>' : '')
+    + (cel ? '<div class="art">' + esc(cel) + '</div>' : '')
+    + (f.represents ? '<div class="means">' + esc(f.represents) + '</div>' : '')
+    + (f.derivation ? '<div class="why">' + esc(f.derivation) + '</div>' : '')
+    + '</div>';
+}
+
+function render() {
+  let h = '';
+
+  h += rule('The stack — crown to base');
+  [...pole.figures].sort((a, b) => b.slot - a.slot).forEach((f) => { h += figureBlock(f); });
+
+  if (pole.adjacency?.length) {
+    h += rule('What touches what');
+    pole.adjacency.forEach((a) => {
+      h += '<div class="line">' + a.from_slot + ' → ' + a.to_slot
+        + ' &nbsp; <b>' + esc(a.contact) + '</b> · ' + esc(a.direction)
+        + (a.meaning ? ' &nbsp;— ' + esc(a.meaning) : '') + '</div>';
+    });
+  }
+
+  if (pole.bands?.length) {
+    h += rule('Bands');
+    pole.bands.forEach((b) => {
+      h += '<div class="line"><b>' + esc(b.type) + '</b> between '
+        + b.between[0] + ' and ' + b.between[1]
+        + (b.meaning ? ' &nbsp;— ' + esc(b.meaning) : '') + '</div>';
+    });
+  }
+
+  h += rule('The plaque');
+  h += '<div class="plaque">' + esc(pole.plaque) + '</div>';
+
+  if (pole.uncut_wood) {
+    h += rule('Uncut wood');
+    h += '<div class="uncut">' + esc(pole.uncut_wood) + '</div>';
+  }
+
+  if (pole.unmapped?.length) {
+    h += rule('The language had no figure for this');
+    pole.unmapped.forEach((u) => {
+      h += '<div class="unmapped-item"><p>' + esc(u.text) + '</p>'
+        + (u.why_no_figure ? '<i>' + esc(u.why_no_figure) + '</i>' : '') + '</div>';
+    });
+  }
+
+  if (pole.overflow?.length) {
+    h += rule('Held in the plaque, not the wood');
+    h += '<p class="gap-note">The pole ran out of room. These are carried in the prose.</p>';
+    pole.overflow.forEach((o) => { h += '<div class="line">' + esc(o.text) + '</div>'; });
+    if (pole.overflow_note) {
+      h += '<p class="gap-note" style="margin-top:1rem">' + esc(pole.overflow_note) + '</p>';
+    }
+  }
+
+  h += rule('Render it');
+  h += '<p class="gap-note">Two prompts. Paste into Midjourney separately and stack them — '
+    + 'nine elements in one render scrambles the order.</p>';
+  h += '<pre>' + esc(pole.midjourney_lower) + '</pre>';
+  h += '<button class="ghost" data-copy="lower">Copy lower half</button>';
+  h += '<pre style="margin-top:1.5rem">' + esc(pole.midjourney_upper) + '</pre>';
+  h += '<button class="ghost" data-copy="upper">Copy upper half</button>';
+
+  h += '<div class="yours">'
+    + '<h3>This is yours</h3>'
+    + '<p>Nothing was kept. Download what you want. The carve sheet is geometry only — '
+    + 'figures, poses, contact. No names, no plaque, nothing to read. That\'s the file to '
+    + 'send a carver when you\'re ready.</p>'
+    + '<div class="btns">'
+    + '<button class="ghost" data-dl="pole">Download blueprint</button>'
+    + '<button class="ghost" data-dl="carve">Download carve sheet</button>'
+    + '<button class="ghost" data-dl="plaque">Download plaque</button>'
+    + '<button class="ghost" id="again">Start over</button>'
+    + '</div></div>';
+
+  $('out').innerHTML = h;
+  $('working').style.display = 'none';
+  $('out').style.display = 'block';
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+function download(name, text, type) {
+  const url = URL.createObjectURL(new Blob([text], { type }));
+  const a = document.createElement('a');
+  a.href = url; a.download = name; a.click();
+  URL.revokeObjectURL(url);
+}
+
+$('out').addEventListener('click', (e) => {
+  const c = e.target.dataset.copy;
+  if (c) {
+    navigator.clipboard.writeText(c === 'lower' ? pole.midjourney_lower : pole.midjourney_upper);
+    e.target.textContent = 'Copied';
+    setTimeout(() => { e.target.textContent = 'Copy ' + c + ' half'; }, 1600);
+    return;
+  }
+
+  const d = e.target.dataset.dl;
+  if (d === 'pole')  download('pole.json', JSON.stringify(pole, null, 2), 'application/json');
+  if (d === 'carve') download('carve-sheet.json', JSON.stringify(carve, null, 2), 'application/json');
+  if (d === 'plaque') download('plaque.txt', pole.plaque, 'text/plain');
+
+  if (e.target.id === 'again') {
+    pole = carve = null;
+    $('story').value = '';
+    $('count').textContent = '0 characters';
+    $('need').textContent = '200 minimum';
+    $('need').className = '';
+    $('go').disabled = true;
+    $('out').style.display = 'none';
+    $('form').style.display = 'block';
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+});
+</script>
+</body>
+</html>
