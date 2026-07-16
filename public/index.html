@@ -496,8 +496,22 @@ $('go').addEventListener('click', async () => {
       headers: { 'content-type': 'application/json' },
       body: JSON.stringify({ story, height }),
     });
-    const data = await r.json();
-    if (!r.ok) throw new Error(data.error || 'The parser failed.');
+    const raw = await r.text();
+    let data;
+    try {
+      data = JSON.parse(raw);
+    } catch {
+      // Backend returned something that isn't JSON (an HTML error page).
+      // Surface the real HTTP status instead of a cryptic browser error.
+      if (r.status === 404) {
+        throw new Error('The /api/create function isn\'t reachable (404). In Vercel, make sure the project is NOT set to a static framework and that api/create.js deployed.');
+      }
+      if (r.status >= 500) {
+        throw new Error('The server function errored (' + r.status + '). Most likely ANTHROPIC_API_KEY isn\'t set in Vercel — add it under Settings → Environment Variables, then redeploy. (Check the function logs in Vercel for the exact cause.)');
+      }
+      throw new Error('Unexpected response (HTTP ' + r.status + '): ' + raw.slice(0, 160));
+    }
+    if (!r.ok) throw new Error(data.error || ('Error ' + r.status));
 
     pole = data.pole;
     carve = data.carve;
