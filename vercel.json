@@ -1,5 +1,5 @@
 {
-  "functions": { "api/create.js": { "maxDuration": 60 } },
+  "functions": { "api/create.js": { "maxDuration": 300 } },
   "headers": [
     {
       "source": "/(.*)",

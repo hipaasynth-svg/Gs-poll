@@ -1,6 +1,6 @@
 import { CANON } from '../lib/canon.js';
 
-const MODEL = 'claude-opus-4-6';
+const MODEL = 'claude-opus-4-8';
 const CAPACITY = { 6: 4, 8: 5, 10: 7, 12: 8 };
 
 const MIN_STORY = 200;
