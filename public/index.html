@@ -606,12 +606,9 @@ function render() {
   }
 
   h += rule('Render it');
-  h += '<p class="gap-note">Two prompts. Paste into Midjourney separately and stack them — '
-    + 'nine elements in one render scrambles the order.</p>';
-  h += '<pre>' + esc(pole.midjourney_lower) + '</pre>';
-  h += '<button class="ghost" data-copy="lower">Copy lower half</button>';
-  h += '<pre style="margin-top:1.5rem">' + esc(pole.midjourney_upper) + '</pre>';
-  h += '<button class="ghost" data-copy="upper">Copy upper half</button>';
+  h += '<p class="gap-note">One prompt for the whole pole, every figure named. Paste it into Midjourney as-is.</p>';
+  h += '<pre>' + esc(pole.midjourney_prompt) + '</pre>';
+  h += '<button class="ghost" data-copy="prompt">Copy prompt</button>';
 
   h += '<div class="yours">'
     + '<h3>This is yours</h3>'
@@ -641,9 +638,9 @@ function download(name, text, type) {
 $('out').addEventListener('click', (e) => {
   const c = e.target.dataset.copy;
   if (c) {
-    navigator.clipboard.writeText(c === 'lower' ? pole.midjourney_lower : pole.midjourney_upper);
+    navigator.clipboard.writeText(pole.midjourney_prompt);
     e.target.textContent = 'Copied';
-    setTimeout(() => { e.target.textContent = 'Copy ' + c + ' half'; }, 1600);
+    setTimeout(() => { e.target.textContent = 'Copy prompt'; }, 1600);
     return;
   }
 

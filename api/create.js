@@ -77,11 +77,15 @@ Do this work in order:
    Use the person's own facts. Do not soften and do not editorialize. This is the document
    that sells the pole and it is the part they will read out loud.
 
-8. BUILD two Midjourney prompts — lower half and upper half — following the style block at
-   the end of this message exactly. Number the elements explicitly (ELEMENT 1, ELEMENT 2)
-   with "directly above" language, because the model does not respect unnumbered sequence.
-   The prompts describe GEOMETRY ONLY. Never put a person's name, relationship, or life
-   event into a Midjourney prompt.
+8. BUILD one Midjourney prompt for the whole pole, base to crown, following the style block
+   at the end of this message exactly. Number every figure explicitly (ELEMENT 1 at the base,
+   then ELEMENT 2 directly above it, continuing to the crown) — the model does not respect
+   unnumbered sequence. For each element, NAME the actual animal or form (a carved bear, a
+   carved wolf, an owl, a raven, and so on) so no figure is ever dropped from the render, then
+   give its geometry: pose, gaze, limbs, mouth, and any sun/moon detail. Every figure in the
+   list above must appear as its own named element — never omit an animal. Describe the named
+   figures and their GEOMETRY ONLY. Never put a person's name, relationship, or life event
+   into the prompt.
 
 Return ONLY valid JSON. No markdown fences, no preamble.
 
@@ -121,11 +125,10 @@ Return ONLY valid JSON. No markdown fences, no preamble.
   "overflow_note": "",
   "uncut_wood": "what the pole leaves uncarved and why, or null",
   "plaque": "full prose, base to crown",
-  "midjourney_lower": "",
-  "midjourney_upper": ""
+  "midjourney_prompt": "one full prompt, base to crown, every figure named as its own element, ending with the style block"
 }
 
-STYLE BLOCK — both Midjourney prompts must end with exactly this:
+STYLE BLOCK — the Midjourney prompt must end with exactly this:
 
 ${STYLE_BLOCK}
 `;
@@ -160,8 +163,7 @@ export function toCarveSheet(pole) {
     })),
     bands: (pole.bands || []).map((b) => ({ between: b.between, type: b.type })),
     uncut_wood_above_crown: Boolean(pole.uncut_wood),
-    midjourney_lower: pole.midjourney_lower || '',
-    midjourney_upper: pole.midjourney_upper || '',
+    midjourney_prompt: pole.midjourney_prompt || '',
     _note: 'Geometry only. No story, no names, no derivation. Carve what this shows.',
   };
 }
