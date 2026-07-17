@@ -1,6 +1,6 @@
 import { CANON } from '../lib/canon.js';
 
-const MODEL = 'claude-opus-4-8';
+const MODEL = 'claude-sonnet-5';
 const IMAGE_MODEL = 'grok-imagine-image-quality';   // xAI (Grok Imagine) renders the carving
 // Cheaper alternative: 'grok-imagine-image' (~$0.02 vs ~$0.055 per image)
 const IMAGE_PROMPT_MAX = 1600;        // xAI image prompt length cap (headroom for the template)
@@ -67,7 +67,9 @@ function rateLimited(ip) {
 // rendered figure.
 const CRAFT = `carved directly out of the tree itself, part of the single log — each figure a bold clean silhouette shaped in dramatic deep relief with just twelve cuts, hard sharp outline, radical simplification, symbol over anatomy, negative space doing half the work; no fur texture, no feather detail, no rendered pupils, no scales, no ornament or filigree, not tribal, not formline, not a totem; vertical wood grain running through every figure, dramatic hard side lighting, deep carved shadows, neutral concrete-grey background`;
 
-function buildPrompt(story, height, budget) {
+// The stable half of the prompt — canon + instructions. Identical on every
+// request, so it caches. Story / height / budget live in the user message.
+function buildSystem() {
   return `You are the parser for Grateful Spaces Studio. You take a person's life
 story and render it into a story pole using the canon below. You never invent figures.
 You only use what the canon contains.
@@ -76,11 +78,8 @@ You only use what the canon contains.
 ${CANON}
 </canon>
 
-<story>
-${story}
-</story>
-
-The pole is ${height} feet. Figure budget: ${budget} slots.
+The user message contains the pole height (in feet), the figure budget (number
+of slots), and the person's life story. Read all three from there.
 
 Do this work in order:
 
@@ -127,8 +126,8 @@ Do this work in order:
 Return ONLY valid JSON. No markdown fences, no preamble.
 
 {
-  "height_ft": ${height},
-  "figure_budget": ${budget},
+  "height_ft": <pole height in feet, from the user message>,
+  "figure_budget": <figure budget in slots, from the user message>,
   "figures": [
     {
       "slot": 1,
@@ -167,7 +166,7 @@ Return ONLY valid JSON. No markdown fences, no preamble.
 
 RENDER TEMPLATE — return this filled in as "midjourney_prompt". Keep the opening and closing sentences verbatim; replace only the numbered list:
 
-A highly detailed, photorealistic image of a tall, freestanding traditional wood-carved story pole ${height} feet tall, hand-carved from a single massive western red cedar log with visible natural wood grain, knots, and aged texture. The pole stands vertically in the center of the frame, fully visible from base to the very top with generous empty space around it so the entire sculpture is completely in view without any cropping.
+A highly detailed, photorealistic image of a tall, freestanding traditional wood-carved story pole [the pole height in feet, from the user message] feet tall, hand-carved from a single massive western red cedar log with visible natural wood grain, knots, and aged texture. The pole stands vertically in the center of the frame, fully visible from base to the very top with generous empty space around it so the entire sculpture is completely in view without any cropping.
 
 The carvings ascend in precise order from the base upward exactly as follows, with no omissions or reordering:
 1. [base figure — named animal or form, with its pose]
@@ -178,6 +177,16 @@ Each carving is ${CRAFT}. The wood shows natural variation in color, weathering,
 
 Photorealistic, 8k resolution, sharp focus on every detail, accurate proportions, museum-quality documentation style, no cropping, full vertical composition, entire pole visible end-to-end.
 `;
+}
+
+// The volatile half — the only part that changes per request.
+function buildUser(story, height, budget) {
+  return `Pole height: ${height} feet.
+Figure budget: ${budget} slots.
+
+<story>
+${story}
+</story>`;
 }
 
 // Geometry only. No names, no derivation, no plaque. This is the studio copy.
@@ -266,8 +275,13 @@ export default async function handler(req, res) {
       body: JSON.stringify({
         model: MODEL,
         max_tokens: 8000,
+        thinking: { type: 'disabled' },
+        // Canon + instructions are identical every call, so cache them.
+        system: [
+          { type: 'text', text: buildSystem(), cache_control: { type: 'ephemeral' } },
+        ],
         messages: [
-          { role: 'user', content: buildPrompt(story.trim(), height, budget) },
+          { role: 'user', content: buildUser(story.trim(), height, budget) },
         ],
       }),
     });
