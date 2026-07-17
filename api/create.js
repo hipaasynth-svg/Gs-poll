@@ -65,7 +65,7 @@ function rateLimited(ip) {
 
 // The studio carving rules — the "cut minimums and relevant topics" — woven into every
 // rendered figure.
-const CRAFT = `relief-carved in flat simplified planes with a hard clean outline, radical simplification of fewer than 12 cuts per figure, symbol over anatomy, negative space doing half the work; no fur texture, no feather detail, no rendered pupils, no scales, no ornament or filigree, not tribal, not formline, not a totem; vertical wood grain running through every figure, dramatic hard side lighting, deep shadows in the cuts, neutral concrete-grey background`;
+const CRAFT = `carved directly out of the tree itself, part of the single log — each figure a bold clean silhouette shaped in dramatic deep relief with just twelve cuts, hard sharp outline, radical simplification, symbol over anatomy, negative space doing half the work; no fur texture, no feather detail, no rendered pupils, no scales, no ornament or filigree, not tribal, not formline, not a totem; vertical wood grain running through every figure, dramatic hard side lighting, deep carved shadows, neutral concrete-grey background`;
 
 function buildPrompt(story, height, budget) {
   return `You are the parser for Grateful Spaces Studio. You take a person's life
