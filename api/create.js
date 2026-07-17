@@ -4,6 +4,9 @@ const MODEL = 'claude-opus-4-8';
 const IMAGE_MODEL = 'grok-imagine-image-quality';   // xAI (Grok Imagine) renders the carving
 // Cheaper alternative: 'grok-imagine-image' (~$0.02 vs ~$0.055 per image)
 const IMAGE_PROMPT_MAX = 1024;        // xAI image prompt length cap
+// Force the whole pole into frame — xAI has no size/aspect parameter, so we
+// say it in the prompt.
+const FRAMING = 'Tall vertical portrait composition. The entire carved wooden story pole is shown in full, complete from base to crown, nothing cropped or cut off, centered with clear empty margins on every side. ';
 const CAPACITY = { 6: 4, 8: 5, 10: 7, 12: 8 };
 
 const MIN_STORY = 200;
@@ -32,7 +35,7 @@ async function renderCarving(prompt) {
       },
       body: JSON.stringify({
         model: IMAGE_MODEL,
-        prompt: prompt.slice(0, IMAGE_PROMPT_MAX),
+        prompt: (FRAMING + prompt).slice(0, IMAGE_PROMPT_MAX),
         n: 1,
         response_format: 'b64_json',
       }),

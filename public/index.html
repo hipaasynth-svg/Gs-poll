@@ -11,10 +11,10 @@
 <style>
   :root {
     --void:      #13100B;
-    --wood:      #C9A24B;
-    --grain:     #8B6F47;
-    --bone:      #E7DAC0;
-    --concrete:  #6B5E48;
+    --wood:      #D9B65C;
+    --grain:     #A0855A;
+    --bone:      #F0E6CE;
+    --concrete:  #8A7A5C;
     --dim:       #2A2317;
 
     --display: 'Cormorant', Georgia, serif;
@@ -69,12 +69,24 @@
 
   h1 em { font-style: italic; color: var(--bone); }
 
-  .sub {
-    font-size: 1.02rem;
-    color: var(--concrete);
-    max-width: 34rem;
+  .tagline {
+    font-family: var(--display);
+    font-style: italic;
+    font-size: 1.15rem;
+    color: var(--wood);
+    margin-bottom: 1.75rem;
+    max-width: 36rem;
   }
 
+  .sub {
+    font-size: 1.02rem;
+    line-height: 1.75;
+    color: #CDBE9E;
+    max-width: 36rem;
+  }
+
+  .sub p { margin-bottom: 1.15rem; }
+  .sub p:last-child { margin-bottom: 0; }
   .sub strong { color: var(--wood); font-weight: 400; }
 
   /* ---------- the box ---------- */
@@ -425,14 +437,24 @@
 
   <header>
     <div class="studio">Grateful Spaces Studio · The Studio Renderer</div>
-    <h1>A carving that<br><em>mirrors the mind.</em></h1>
-    <p class="sub">
-      The Studio Renderer reads your life and returns a carving — a life captured in an
-      appealing visual form, held up as a mirror to the mind that lived it. You get the
-      figures, how they stand, what touches what, and the plaque that reads it all aloud.
-      <strong>Your story is never stored.</strong> It lasts only as long as the carving
-      takes to render, then it's gone.
-    </p>
+    <h1>A carving of<br><em>a lifetime.</em></h1>
+    <p class="tagline">An original language of twenty animals, created by Cody Carlson.</p>
+    <div class="sub">
+      <p>This is an introspective process — one that gives you a real, deep visual of the life
+      you've lived. Take as much time as you need. Remember what has made you the person living
+      today, type it in, and press <strong>Create</strong>. Then look through what comes back and
+      explore it. The more you put in, the heavier the sentiment you'll receive.</p>
+
+      <p>You are among the very first to use this. If you're willing, I'd love for you to share
+      back your image and blueprint — both have a download button — and tell me whether the
+      render felt accurate and what it was like to read. For me it touched something: it made me
+      think hard about trials and successes, family and friends. It was a lens into my own life
+      that let me glimpse places long forgotten. I hope it does the same for you.</p>
+
+      <p><strong>Your story is never saved to any disk and never lives on any server. Press
+      Create and it's gone.</strong> This was made to give you full freedom of memory — a way to
+      set it down for closure, or for comfort. Thanks for being here.</p>
+    </div>
   </header>
 
   <main id="form">
@@ -572,6 +594,20 @@ function figureBlock(f) {
 function render() {
   let h = '';
 
+  h += rule('The carving, rendered');
+  if (img) {
+    h += '<img class="render-img" src="' + esc(img) + '" alt="The carving rendered from your life">';
+    h += '<div class="btns" style="margin-top:1rem">'
+      + '<a class="ghost" href="' + esc(img) + '" download="carving.jpg" role="button">Download image</a>'
+      + '</div>';
+  } else {
+    const why = imgErr === 'no_key'
+      ? 'The image renderer isn’t connected yet (set XAI_API_KEY in Vercel).'
+      : 'The image didn’t render this time. Use the prompt below in the meantime.';
+    h += '<p class="gap-note">' + why + '</p>';
+    if (imgDetail) h += '<pre>' + esc(imgDetail) + '</pre>';
+  }
+
   h += rule('The stack — crown to base');
   [...pole.figures].sort((a, b) => b.slot - a.slot).forEach((f) => { h += figureBlock(f); });
 
@@ -616,20 +652,6 @@ function render() {
     if (pole.overflow_note) {
       h += '<p class="gap-note" style="margin-top:1rem">' + esc(pole.overflow_note) + '</p>';
     }
-  }
-
-  h += rule('The carving, rendered');
-  if (img) {
-    h += '<img class="render-img" src="' + esc(img) + '" alt="The carving rendered from your life">';
-    h += '<div class="btns" style="margin-top:1rem">'
-      + '<a class="ghost" href="' + esc(img) + '" download="carving.jpg" role="button">Download image</a>'
-      + '</div>';
-  } else {
-    const why = imgErr === 'no_key'
-      ? 'The image renderer isn’t connected yet (set XAI_API_KEY in Vercel).'
-      : 'The image didn’t render this time. Use the prompt below in the meantime.';
-    h += '<p class="gap-note">' + why + '</p>';
-    if (imgDetail) h += '<pre>' + esc(imgDetail) + '</pre>';
   }
 
   h += rule('The prompt');
