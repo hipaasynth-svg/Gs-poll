@@ -3,10 +3,7 @@ import { CANON } from '../lib/canon.js';
 const MODEL = 'claude-opus-4-8';
 const IMAGE_MODEL = 'grok-imagine-image-quality';   // xAI (Grok Imagine) renders the carving
 // Cheaper alternative: 'grok-imagine-image' (~$0.02 vs ~$0.055 per image)
-const IMAGE_PROMPT_MAX = 1024;        // xAI image prompt length cap
-// Force the whole pole into frame — xAI has no size/aspect parameter, so we
-// say it in the prompt.
-const FRAMING = 'Tall vertical portrait composition. The entire carved wooden story pole is shown in full, complete from base to crown, nothing cropped or cut off, centered with clear empty margins on every side. ';
+const IMAGE_PROMPT_MAX = 1600;        // xAI image prompt length cap (headroom for the template)
 const CAPACITY = { 6: 4, 8: 5, 10: 7, 12: 8 };
 
 const MIN_STORY = 200;
@@ -35,7 +32,7 @@ async function renderCarving(prompt) {
       },
       body: JSON.stringify({
         model: IMAGE_MODEL,
-        prompt: (FRAMING + prompt).slice(0, IMAGE_PROMPT_MAX),
+        prompt: prompt.slice(0, IMAGE_PROMPT_MAX),
         n: 1,
         response_format: 'b64_json',
       }),
@@ -66,13 +63,9 @@ function rateLimited(ip) {
   return false;
 }
 
-const STYLE_BLOCK = `STYLE: Radical simplification. Flat carved planes, fewer than 12 cuts per figure. Hard
-outline only. NO fur texture, NO feather detail, NO rendered pupils, NO scales, NO
-ornamental borders, NO geometric flourishes, NO mask forms. Symbol over anatomy. Negative
-space does half the work. Medieval hermetic woodcut, not tribal, not formline. Vertical
-wood grain visible through every figure. Dramatic side lighting, hard shadows, neutral
-concrete background.
---no fur, feathers, texture, ornament, filigree, tribal mask, formline, totem`;
+// The studio carving rules — the "cut minimums and relevant topics" — woven into every
+// rendered figure.
+const CRAFT = `relief-carved in flat simplified planes with a hard clean outline, radical simplification of fewer than 12 cuts per figure, symbol over anatomy, negative space doing half the work; no fur texture, no feather detail, no rendered pupils, no scales, no ornament or filigree, not tribal, not formline, not a totem; vertical wood grain running through every figure, dramatic hard side lighting, deep shadows in the cuts, neutral concrete-grey background`;
 
 function buildPrompt(story, height, budget) {
   return `You are the parser for Grateful Spaces Studio. You take a person's life
@@ -122,15 +115,14 @@ Do this work in order:
    Use the person's own facts. Do not soften and do not editorialize. This is the document
    that sells the pole and it is the part they will read out loud.
 
-8. BUILD one Midjourney prompt for the whole pole, base to crown, following the style block
-   at the end of this message exactly. Number every figure explicitly (ELEMENT 1 at the base,
-   then ELEMENT 2 directly above it, continuing to the crown) — the model does not respect
-   unnumbered sequence. For each element, NAME the actual animal or form (a carved bear, a
-   carved wolf, an owl, a raven, and so on) so no figure is ever dropped from the render, then
-   give its geometry: pose, gaze, limbs, mouth, and any sun/moon detail. Every figure in the
-   list above must appear as its own named element — never omit an animal. Describe the named
-   figures and their GEOMETRY ONLY. Never put a person's name, relationship, or life event
-   into the prompt.
+8. BUILD the render prompt by filling in the RENDER TEMPLATE below. Keep its fixed opening
+   and closing sentences verbatim; fill in the numbered list. List every figure in strict
+   order from the base (1) upward to the crown (N) — no omissions, no reordering. Every
+   figure in the figures array is its own numbered line, named as the actual animal or form
+   (a carved bear, a carved wolf, an owl, the empty form, the sun, ...), each with a short
+   description of its pose, gaze, limbs, and mouth. Figures and geometry only — never a
+   person's name, relationship, or life event. Keep each numbered line to one concise clause
+   and the whole prompt under ~1400 characters so nothing is cut off.
 
 Return ONLY valid JSON. No markdown fences, no preamble.
 
@@ -170,12 +162,21 @@ Return ONLY valid JSON. No markdown fences, no preamble.
   "overflow_note": "",
   "uncut_wood": "what the pole leaves uncarved and why, or null",
   "plaque": "full prose, base to crown",
-  "midjourney_prompt": "one full prompt, base to crown, every figure named as its own element, ending with the style block"
+  "midjourney_prompt": "the filled render template — one prompt, base to crown, every figure a numbered line, under ~1400 chars"
 }
 
-STYLE BLOCK — the Midjourney prompt must end with exactly this:
+RENDER TEMPLATE — return this filled in as "midjourney_prompt". Keep the opening and closing sentences verbatim; replace only the numbered list:
 
-${STYLE_BLOCK}
+A highly detailed, photorealistic image of a tall, freestanding traditional wood-carved story pole ${height} feet tall, hand-carved from a single massive western red cedar log with visible natural wood grain, knots, and aged texture. The pole stands vertically in the center of the frame, fully visible from base to the very top with generous empty space around it so the entire sculpture is completely in view without any cropping.
+
+The carvings ascend in precise order from the base upward exactly as follows, with no omissions or reordering:
+1. [base figure — named animal or form, with its pose]
+2. [next figure — named animal or form, with its pose]
+N. [crown figure — named animal or form, with its pose]
+
+Each carving is ${CRAFT}. The wood shows natural variation in color, weathering, and patina.
+
+Photorealistic, 8k resolution, sharp focus on every detail, accurate proportions, museum-quality documentation style, no cropping, full vertical composition, entire pole visible end-to-end.
 `;
 }
 
