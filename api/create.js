@@ -1,7 +1,8 @@
 import { CANON } from '../lib/canon.js';
 
 const MODEL = 'claude-opus-4-8';
-const IMAGE_MODEL = 'grok-2-image';   // xAI renders the carving
+const IMAGE_MODEL = 'grok-imagine-image-quality';   // xAI (Grok Imagine) renders the carving
+// Cheaper alternative: 'grok-imagine-image' (~$0.02 vs ~$0.055 per image)
 const IMAGE_PROMPT_MAX = 1024;        // xAI image prompt length cap
 const CAPACITY = { 6: 4, 8: 5, 10: 7, 12: 8 };
 
