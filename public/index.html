@@ -477,7 +477,7 @@
 <script>
 const $ = (id) => document.getElementById(id);
 const MIN = 200;
-let pole = null, carve = null, img = null, imgErr = null;
+let pole = null, carve = null, img = null, imgErr = null, imgDetail = null;
 
 const esc = (s) => String(s ?? '').replace(/[&<>"]/g, (c) =>
   ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
@@ -527,6 +527,7 @@ $('go').addEventListener('click', async () => {
     carve = data.carve;
     img = data.image || null;
     imgErr = data.image_error || null;
+    imgDetail = data.image_detail || null;
     render();
   } catch (e) {
     $('working').style.display = 'none';
@@ -628,6 +629,7 @@ function render() {
       ? 'The image renderer isn’t connected yet (set XAI_API_KEY in Vercel).'
       : 'The image didn’t render this time. Use the prompt below in the meantime.';
     h += '<p class="gap-note">' + why + '</p>';
+    if (imgDetail) h += '<pre>' + esc(imgDetail) + '</pre>';
   }
 
   h += rule('The prompt');
@@ -675,7 +677,7 @@ $('out').addEventListener('click', (e) => {
   if (d === 'plaque') download('plaque.txt', pole.plaque, 'text/plain');
 
   if (e.target.id === 'again') {
-    pole = carve = img = imgErr = null;
+    pole = carve = img = imgErr = imgDetail = null;
     $('story').value = '';
     $('count').textContent = '0 characters';
     $('need').textContent = '200 minimum';

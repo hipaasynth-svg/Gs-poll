@@ -40,17 +40,17 @@ async function renderCarving(prompt) {
 
     if (!r.ok) {
       const detail = await r.text();
-      console.error('xai image error', r.status, detail.slice(0, 200));
-      return { image: null, image_error: 'render_failed' };
+      console.error('xai image error', r.status, detail.slice(0, 300));
+      return { image: null, image_error: 'render_failed', image_detail: `xAI ${r.status}: ${detail.slice(0, 200)}` };
     }
 
     const data = await r.json();
     const b64 = data?.data?.[0]?.b64_json || null;
-    if (!b64) return { image: null, image_error: 'no_image' };
-    return { image: `data:image/jpeg;base64,${b64}`, image_error: null };
+    if (!b64) return { image: null, image_error: 'no_image', image_detail: 'xAI returned no image data.' };
+    return { image: `data:image/jpeg;base64,${b64}`, image_error: null, image_detail: null };
   } catch (e) {
     console.error('xai image exception', e.message);
-    return { image: null, image_error: 'render_failed' };
+    return { image: null, image_error: 'render_failed', image_detail: `request failed: ${e.message}` };
   }
 }
 
@@ -301,10 +301,16 @@ export default async function handler(req, res) {
     }
 
     // Render the carving once with Grok (best-effort; geometry prompt only).
-    const { image, image_error } = await renderCarving(pole.midjourney_prompt);
+    const rendered = await renderCarving(pole.midjourney_prompt);
 
     // The story dies here. It was a variable in this invocation. Nothing is stored.
-    return res.status(200).json({ pole, carve, image, image_error });
+    return res.status(200).json({
+      pole,
+      carve,
+      image: rendered.image,
+      image_error: rendered.image_error,
+      image_detail: rendered.image_detail || null,
+    });
   } catch (e) {
     console.error('handler error', e.message);
     return res.status(500).json({ error: 'Something broke. Try again.' });
