@@ -365,6 +365,15 @@
     white-space: pre-wrap;
   }
 
+  .render-img {
+    display: block;
+    width: 100%;
+    max-width: 100%;
+    height: auto;
+    border: 1px solid var(--dim);
+    background: rgba(196,165,116,0.03);
+  }
+
   .gap-note {
     font-size: 0.9rem;
     color: var(--concrete);
@@ -468,7 +477,7 @@
 <script>
 const $ = (id) => document.getElementById(id);
 const MIN = 200;
-let pole = null, carve = null;
+let pole = null, carve = null, img = null, imgErr = null;
 
 const esc = (s) => String(s ?? '').replace(/[&<>"]/g, (c) =>
   ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
@@ -516,6 +525,8 @@ $('go').addEventListener('click', async () => {
 
     pole = data.pole;
     carve = data.carve;
+    img = data.image || null;
+    imgErr = data.image_error || null;
     render();
   } catch (e) {
     $('working').style.display = 'none';
@@ -606,8 +617,21 @@ function render() {
     }
   }
 
-  h += rule('Render it');
-  h += '<p class="gap-note">One prompt for the whole pole, every figure named. Paste it into Midjourney as-is.</p>';
+  h += rule('The carving, rendered');
+  if (img) {
+    h += '<img class="render-img" src="' + esc(img) + '" alt="The carving rendered from your life">';
+    h += '<div class="btns" style="margin-top:1rem">'
+      + '<a class="ghost" href="' + esc(img) + '" download="carving.jpg" role="button">Download image</a>'
+      + '</div>';
+  } else {
+    const why = imgErr === 'no_key'
+      ? 'The image renderer isn’t connected yet (set XAI_API_KEY in Vercel).'
+      : 'The image didn’t render this time. Use the prompt below in the meantime.';
+    h += '<p class="gap-note">' + why + '</p>';
+  }
+
+  h += rule('The prompt');
+  h += '<p class="gap-note">One prompt for the whole pole, every figure named — the same prompt Grok rendered above. Paste it elsewhere if you like.</p>';
   h += '<pre>' + esc(pole.midjourney_prompt) + '</pre>';
   h += '<button class="ghost" data-copy="prompt">Copy prompt</button>';
 
@@ -651,7 +675,7 @@ $('out').addEventListener('click', (e) => {
   if (d === 'plaque') download('plaque.txt', pole.plaque, 'text/plain');
 
   if (e.target.id === 'again') {
-    pole = carve = null;
+    pole = carve = img = imgErr = null;
     $('story').value = '';
     $('count').textContent = '0 characters';
     $('need').textContent = '200 minimum';

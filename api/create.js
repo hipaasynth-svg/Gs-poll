@@ -1,6 +1,8 @@
 import { CANON } from '../lib/canon.js';
 
 const MODEL = 'claude-opus-4-8';
+const IMAGE_MODEL = 'grok-2-image';   // xAI renders the carving
+const IMAGE_PROMPT_MAX = 1024;        // xAI image prompt length cap
 const CAPACITY = { 6: 4, 8: 5, 10: 7, 12: 8 };
 
 const MIN_STORY = 200;
@@ -11,6 +13,45 @@ const MAX_STORY = 20000;
 const hits = new Map();
 const WINDOW_MS = 60 * 60 * 1000;
 const MAX_PER_WINDOW = 5;
+
+// Render the carving with xAI (Grok). One image, best-effort: if the key is
+// missing or the call fails, we still return the pole so the app keeps working.
+// Only the geometry prompt is sent — no names, no story.
+async function renderCarving(prompt) {
+  const key = process.env.XAI_API_KEY;
+  if (!key) return { image: null, image_error: 'no_key' };
+  if (!prompt) return { image: null, image_error: 'no_prompt' };
+
+  try {
+    const r = await fetch('https://api.x.ai/v1/images/generations', {
+      method: 'POST',
+      headers: {
+        'content-type': 'application/json',
+        authorization: `Bearer ${key}`,
+      },
+      body: JSON.stringify({
+        model: IMAGE_MODEL,
+        prompt: prompt.slice(0, IMAGE_PROMPT_MAX),
+        n: 1,
+        response_format: 'b64_json',
+      }),
+    });
+
+    if (!r.ok) {
+      const detail = await r.text();
+      console.error('xai image error', r.status, detail.slice(0, 200));
+      return { image: null, image_error: 'render_failed' };
+    }
+
+    const data = await r.json();
+    const b64 = data?.data?.[0]?.b64_json || null;
+    if (!b64) return { image: null, image_error: 'no_image' };
+    return { image: `data:image/jpeg;base64,${b64}`, image_error: null };
+  } catch (e) {
+    console.error('xai image exception', e.message);
+    return { image: null, image_error: 'render_failed' };
+  }
+}
 
 function rateLimited(ip) {
   const now = Date.now();
@@ -258,8 +299,11 @@ export default async function handler(req, res) {
       return res.status(500).json({ error: 'Refusing to return a leaky carve sheet.' });
     }
 
+    // Render the carving once with Grok (best-effort; geometry prompt only).
+    const { image, image_error } = await renderCarving(pole.midjourney_prompt);
+
     // The story dies here. It was a variable in this invocation. Nothing is stored.
-    return res.status(200).json({ pole, carve });
+    return res.status(200).json({ pole, carve, image, image_error });
   } catch (e) {
     console.error('handler error', e.message);
     return res.status(500).json({ error: 'Something broke. Try again.' });
