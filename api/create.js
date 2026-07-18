@@ -91,7 +91,7 @@ Do this work in order:
    was taken from them by someone or something else. Removal resolves to THE EMPTY FORM.
    Do not force an Empty Form if the story has no removal. Many stories won't.
 
-3. MAP beats to canon figures. Every figure must come from the canon's 16. If a beat has
+3. MAP beats to canon figures. Every figure must come from the canon's 20. If a beat has
    no home in the canon, mark it \`unmapped\` and keep it — do not silently drop it and do
    not invent a figure for it.
 
@@ -131,7 +131,7 @@ Return ONLY valid JSON. No markdown fences, no preamble.
   "figures": [
     {
       "slot": 1,
-      "figure": "BEAR|WOLF|OWL|EAGLE|RAVEN|SALMON|RABBIT|DOG|TURTLE|LION|SLOTH|HORSE|RAM|PHOENIX|SUN|MOON|EMPTY_FORM",
+      "figure": "BEAR|WOLF|OWL|EAGLE|RAVEN|SALMON|RABBIT|DOG|TURTLE|LION|SLOTH|HORSE|RAM|FOX|SERPENT|CAT|DEER|PHOENIX|SUN|MOON|EMPTY_FORM",
       "pose": "",
       "gaze": "up|forward|down|turned",
       "limbs": "raised|crossed|extended|rest",
