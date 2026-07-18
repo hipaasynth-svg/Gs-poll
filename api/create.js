@@ -1,4 +1,5 @@
 import { CANON } from '../lib/canon.js';
+import { isAuthed } from '../lib/auth.js';
 
 const MODEL = 'claude-sonnet-5';
 const IMAGE_MODEL = 'grok-imagine-image-quality';   // xAI (Grok Imagine) renders the carving
@@ -231,6 +232,12 @@ export function auditCarveSheet(carve) {
 export default async function handler(req, res) {
   if (req.method !== 'POST') {
     return res.status(405).json({ error: 'POST only' });
+  }
+
+  // The gate. Without a valid unlock cookie the parser never runs, so the URL
+  // alone can't spend the API key. No-op when SITE_PASSWORD isn't configured.
+  if (!isAuthed(req)) {
+    return res.status(401).json({ error: 'locked' });
   }
 
   const ip =

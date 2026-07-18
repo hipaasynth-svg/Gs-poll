@@ -430,9 +430,85 @@
     * { animation: none !important; transition: none !important; }
     .kerf { height: 5rem; opacity: 1; }
   }
+
+  /* ---------- the gate ---------- */
+
+  /* Hide the page until we know whether the gate applies, so the studio never
+     flashes before the lock. Unhidden by JS once the gate state is known. */
+  body.gated .wrap { display: none; }
+
+  #gate {
+    display: none;
+    position: fixed;
+    inset: 0;
+    z-index: 10;
+    background: var(--void);
+    background-image: repeating-linear-gradient(
+      90deg, transparent 0 3px, rgba(196,165,116,0.012) 3px 4px);
+    padding: 2rem 1.5rem;
+    overflow-y: auto;
+  }
+
+  body.gated #gate { display: flex; }
+
+  .gate-card {
+    max-width: 26rem;
+    margin: auto;
+    width: 100%;
+  }
+
+  .gate-card .studio { margin-bottom: 1.75rem; }
+
+  .gate-card h2 {
+    font-family: var(--display);
+    font-weight: 300;
+    font-size: clamp(2rem, 7vw, 2.8rem);
+    line-height: 1;
+    letter-spacing: -0.02em;
+    color: var(--wood);
+    margin-bottom: 1rem;
+  }
+
+  .gate-card p {
+    font-size: 0.98rem;
+    color: #CDBE9E;
+    margin-bottom: 2rem;
+  }
+
+  #gate input {
+    width: 100%;
+    background: rgba(196,165,116,0.03);
+    border: 1px solid var(--dim);
+    border-radius: 0;
+    color: var(--bone);
+    font-family: var(--mono);
+    font-size: 0.95rem;
+    letter-spacing: 0.1em;
+    padding: 1rem 1.25rem;
+    margin-bottom: 1.25rem;
+  }
+  #gate input:focus { outline: none; border-color: var(--grain); }
+  #gate input:focus-visible { outline: 2px solid var(--wood); outline-offset: 2px; }
+
+  #gate button { width: 100%; padding: 1rem; }
+
+  #gate .err { margin-top: 1.25rem; }
 </style>
 </head>
-<body>
+<body class="gated">
+
+<div id="gate">
+  <form class="gate-card" id="gate-form">
+    <div class="studio">Grateful Spaces Studio · The Studio Renderer</div>
+    <h2>This one is private.</h2>
+    <p>The Studio Renderer is open by invitation. Enter the password you were given to step inside.</p>
+    <label for="gate-pw">Password</label>
+    <input id="gate-pw" type="password" autocomplete="current-password" autofocus>
+    <button type="submit" id="gate-go">Unlock</button>
+    <div class="err" id="gate-err" style="display:none"></div>
+  </form>
+</div>
+
 <div class="wrap">
 
   <header>
@@ -504,6 +580,54 @@ let pole = null, carve = null, img = null, imgErr = null, imgDetail = null;
 const esc = (s) => String(s ?? '').replace(/[&<>"]/g, (c) =>
   ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
 
+/* ---------- the gate ---------- */
+const gate = {
+  lock() {
+    document.body.classList.add('gated');
+    $('gate-pw').focus();
+  },
+  unlock() {
+    document.body.classList.remove('gated');
+  },
+  async check() {
+    try {
+      const r = await fetch('/api/auth');
+      const d = await r.json();
+      if (d.required && !d.authed) this.lock();
+      else this.unlock();
+    } catch {
+      // If the check itself can't complete, open the page — the /api/create
+      // guard is the real boundary and will re-lock if a password is still
+      // required.
+      this.unlock();
+    }
+  },
+};
+gate.check();
+
+$('gate-form').addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const password = $('gate-pw').value;
+  $('gate-err').style.display = 'none';
+  $('gate-go').disabled = true;
+  try {
+    const r = await fetch('/api/auth', {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({ password }),
+    });
+    const d = await r.json().catch(() => ({}));
+    if (!r.ok) throw new Error(d.error || 'That didn’t work. Try again.');
+    $('gate-pw').value = '';
+    gate.unlock();
+  } catch (err) {
+    $('gate-err').textContent = err.message;
+    $('gate-err').style.display = 'block';
+  } finally {
+    $('gate-go').disabled = false;
+  }
+});
+
 $('story').addEventListener('input', (e) => {
   const n = e.target.value.trim().length;
   $('count').textContent = n.toLocaleString() + ' characters';
@@ -542,6 +666,13 @@ $('go').addEventListener('click', async () => {
         throw new Error('The server function errored (' + r.status + '). Most likely ANTHROPIC_API_KEY isn\'t set in Vercel — add it under Settings → Environment Variables, then redeploy. (Check the function logs in Vercel for the exact cause.)');
       }
       throw new Error('Unexpected response (HTTP ' + r.status + '): ' + raw.slice(0, 160));
+    }
+    if (r.status === 401) {
+      // The unlock cookie expired or was cleared. Send them back to the gate.
+      $('working').style.display = 'none';
+      $('form').style.display = 'block';
+      gate.lock();
+      return;
     }
     if (!r.ok) throw new Error(data.error || ('Error ' + r.status));
 
