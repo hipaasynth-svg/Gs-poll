@@ -12,16 +12,35 @@ npm i -g vercel
 vercel login
 vercel                              # first deploy, answer the prompts
 vercel env add ANTHROPIC_API_KEY    # paste the key from console.anthropic.com
+vercel env add SITE_PASSWORD        # the password that gates the site
 vercel --prod
 ```
 
-That's it. You get a URL. Send it to whoever.
+That's it. You get a URL. Send it — and the password — to whoever.
+
+## The password gate
+
+The site is behind one shared password so the URL alone can't spend your API
+key. Set `SITE_PASSWORD` in Vercel (Settings → Environment Variables) and
+redeploy. Visitors see a lock screen and must enter it before the box appears.
+
+- The password is checked **server-side**: `api/create.js` refuses to run without
+  a valid unlock cookie, so editing the page in the browser doesn't get past it.
+- Unlocking sets an HttpOnly cookie for 30 days — enter it once per browser.
+- Failed attempts are rate-limited per IP as a brute-force brake.
+- Leave `SITE_PASSWORD` unset (e.g. local dev) and the gate is disabled — the
+  site behaves exactly as before.
+
+To change the password, update `SITE_PASSWORD` and redeploy; existing unlock
+cookies stop working immediately.
 
 ## Files
 
 ```
-public/index.html   the box + the rendered package
+public/index.html   the box + the rendered package + the lock screen
 api/create.js       canon + Claude, returns pole + carve sheet, stores nothing
+api/auth.js         checks the password, sets the unlock cookie
+lib/auth.js         the gate: password check, cookie, server-side guard
 lib/canon.js        canon.md as a JS string
 vercel.json         60s function timeout, noindex
 ```
