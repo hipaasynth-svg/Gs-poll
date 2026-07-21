@@ -42,7 +42,7 @@ api/create.js       canon + Claude, returns pole + carve sheet, stores nothing
 api/auth.js         checks the password, sets the unlock cookie
 lib/auth.js         the gate: password check, cookie, server-side guard
 lib/canon.js        canon.md as a JS string
-vercel.json         60s function timeout, noindex
+vercel.json         300s function timeout
 ```
 
 ## When the canon changes
