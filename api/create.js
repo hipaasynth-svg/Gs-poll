@@ -167,7 +167,7 @@ Return ONLY valid JSON. No markdown fences, no preamble.
 
 RENDER TEMPLATE — return this filled in as "midjourney_prompt". Keep the opening and closing sentences verbatim; replace only the numbered list:
 
-A highly detailed, photorealistic image of a tall, freestanding traditional wood-carved story pole [the pole height in feet, from the user message] feet tall, hand-carved from a single massive western red cedar log with visible natural wood grain, knots, and aged texture. The pole stands vertically in the center of the frame, fully visible from base to the very top with generous empty space around it so the entire sculpture is completely in view without any cropping.
+A highly detailed, photorealistic image of a tall, freestanding negative-space carved 3D story pole [the pole height in feet, from the user message] feet tall — every figure defined by what is cut away as much as by what remains, deep negative-space voids doing half the sculptural work — hand-carved from a single massive western red cedar log with visible natural wood grain, knots, and aged texture. The pole stands vertically in the center of the frame, fully visible from base to the very top with generous empty space around it so the entire sculpture is completely in view without any cropping.
 
 The carvings ascend in precise order from the base upward exactly as follows, with no omissions or reordering:
 1. [base figure — named animal or form, with its pose]
