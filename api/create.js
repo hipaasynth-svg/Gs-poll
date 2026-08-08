@@ -66,7 +66,7 @@ function rateLimited(ip) {
 
 // The studio carving rules — the "cut minimums and relevant topics" — woven into every
 // rendered figure.
-const CRAFT = `carved directly out of the tree itself, part of the single log — each figure a bold clean silhouette shaped in dramatic deep relief with just twelve cuts, hard sharp outline, radical simplification, symbol over anatomy, negative space doing half the work; no fur texture, no feather detail, no rendered pupils, no scales, no ornament or filigree, not tribal, not formline, not a totem; vertical wood grain running through every figure, dramatic hard side lighting, deep carved shadows, neutral concrete-grey background`;
+const CRAFT = `carved directly out of the tree itself, part of the single log — each figure a bold clean form carved fully in the round as a freestanding three-dimensional sculpture, NOT a relief and NOT attached to any flat backing, with just twelve cuts, hard sharp outline, radical simplification, symbol over anatomy, negative space doing half the work; no fur texture, no feather detail, no rendered pupils, no scales, no ornament or filigree, not tribal, not formline, not a totem; vertical wood grain running through every figure, dramatic hard side lighting, deep carved shadows, neutral concrete-grey background`;
 
 // The stable half of the prompt — canon + instructions. Identical on every
 // request, so it caches. Story / height / budget live in the user message.
@@ -167,16 +167,16 @@ Return ONLY valid JSON. No markdown fences, no preamble.
 
 RENDER TEMPLATE — return this filled in as "midjourney_prompt". Keep the opening and closing sentences verbatim; replace only the numbered list:
 
-A highly detailed, photorealistic image of a tall, freestanding negative-space carved 3D story pole [the pole height in feet, from the user message] feet tall — every figure defined by what is cut away as much as by what remains, deep negative-space voids doing half the sculptural work — hand-carved from a single massive western red cedar log with visible natural wood grain, knots, and aged texture. The pole stands vertically in the center of the frame, fully visible from base to the very top with generous empty space around it so the entire sculpture is completely in view without any cropping.
+A highly detailed, photorealistic image of a tall, freestanding negative-space story pole [the pole height in feet, from the user message] feet tall, carved fully in the round as a three-dimensional sculpture — a sculpture in the round, NOT a flat relief panel — every figure defined by what is cut away as much as by what remains, deep negative-space voids doing half the sculptural work — hand-carved from a single massive western red cedar log with visible natural wood grain, knots, and aged texture. The pole stands vertically in the center of the frame, fully visible from base to the very top with generous empty space around it so the entire sculpture is completely in view without any cropping.
 
-The carvings ascend in precise order from the base upward exactly as follows, with no omissions or reordering:
+The carvings ascend in precise order from the base upward exactly as follows — every figure listed MUST appear in the carving, with no omissions, no merging, and no reordering:
 1. [base figure — named animal or form, with its pose]
 2. [next figure — named animal or form, with its pose]
 N. [crown figure — named animal or form, with its pose]
 
 Each carving is ${CRAFT}. The wood shows natural variation in color, weathering, and patina.
 
-Photorealistic, 8k resolution, sharp focus on every detail, accurate proportions, museum-quality documentation style, no cropping, full vertical composition, entire pole visible end-to-end.
+Every figure listed above is carved and visible on the pole — all of them, none skipped, dropped, or left out. Photorealistic, 8k resolution, sharp focus on every detail, accurate proportions, museum-quality documentation style, no cropping, full vertical composition, entire pole visible end-to-end.
 `;
 }
 
