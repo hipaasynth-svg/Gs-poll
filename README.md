@@ -42,7 +42,7 @@ api/create.js       canon + Claude, returns pole + carve sheet, stores nothing
 api/auth.js         checks the password, sets the unlock cookie
 lib/auth.js         the gate: password check, cookie, server-side guard
 lib/canon.js        canon.md as a JS string
-vercel.json         60s function timeout, noindex
+vercel.json         300s function timeout, Referrer-Policy + noindex headers
 ```
 
 ## When the canon changes
@@ -66,7 +66,7 @@ vercel --prod
 - the plaque
 - uncut wood
 - unmapped — beats the canon had no figure for
-- both Midjourney prompts, copyable
+- one render prompt for the whole pole, copyable
 - download: blueprint / carve sheet / plaque
 
 The carve sheet is geometry only — no names, no derivation, no plaque. `toCarveSheet()`
