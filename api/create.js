@@ -4,7 +4,11 @@ import { isAuthed } from '../lib/auth.js';
 const MODEL = 'claude-sonnet-5';
 const IMAGE_MODEL = 'grok-imagine-image-quality';   // xAI (Grok Imagine) renders the carving
 // Cheaper alternative: 'grok-imagine-image' (~$0.02 vs ~$0.055 per image)
-const IMAGE_PROMPT_MAX = 1600;        // xAI image prompt length cap (headroom for the template)
+// Our own safety slice on the prompt we send to xAI — NOT xAI's documented cap
+// (that isn't published). The prompt is engineered to fit well under this with
+// the whole figure list up front, so this rarely bites; it's just a backstop
+// against a runaway prompt. Raised to 2000 for headroom on very long lists.
+const IMAGE_PROMPT_MAX = 2000;
 const CAPACITY = { 6: 4, 8: 5, 10: 7, 12: 8 };
 
 const MIN_STORY = 200;
@@ -66,7 +70,7 @@ function rateLimited(ip) {
 
 // The studio carving rules — the "cut minimums and relevant topics" — woven into every
 // rendered figure.
-const CRAFT = `carved directly out of the tree itself, part of the single log — each figure a bold clean form carved fully in the round as a freestanding three-dimensional sculpture, NOT a relief and NOT attached to any flat backing, with just twelve cuts, hard sharp outline, radical simplification, symbol over anatomy, negative space doing half the work; no fur texture, no feather detail, no rendered pupils, no scales, no ornament or filigree, not tribal, not formline, not a totem; vertical wood grain running through every figure, dramatic hard side lighting, deep carved shadows, neutral concrete-grey background`;
+const CRAFT = `a bold form carved in the round from the log — deep negative-space cuts, hard outline, radical simplification, symbol over anatomy; NOT relief, not a totem, not tribal or formline; no fur, feather, scale, pupil, or ornament detail; vertical wood grain, hard side lighting, deep shadows, neutral grey background`;
 
 // The stable half of the prompt — canon + instructions. Identical on every
 // request, so it caches. Story / height / budget live in the user message.
@@ -116,13 +120,15 @@ Do this work in order:
    that sells the pole and it is the part they will read out loud.
 
 8. BUILD the render prompt by filling in the RENDER TEMPLATE below. Keep its fixed opening
-   and closing sentences verbatim; fill in the numbered list. List every figure in strict
-   order from the base (1) upward to the crown (N) — no omissions, no reordering. Every
-   figure in the figures array is its own numbered line, named as the actual animal or form
-   (a carved bear, a carved wolf, an owl, the empty form, the sun, ...), each with a short
-   description of its pose, gaze, limbs, and mouth. Figures and geometry only — never a
-   person's name, relationship, or life event. Keep each numbered line to one concise clause
-   and the whole prompt under ~1400 characters so nothing is cut off.
+   and closing sentences verbatim; fill in the numbered list. Wherever the template says
+   [the total number of figures], replace it with the actual count of figures in the figures
+   array (a single number). List every figure in strict order from the base (1) upward to the
+   crown (N) — no omissions, no reordering. Every figure in the figures array is its own
+   numbered line, named as the actual animal or form (a carved bear, a carved wolf, an owl,
+   the empty form, the sun, ...), each with a short description of its pose, gaze, limbs, and
+   mouth. The number of numbered lines must equal that count exactly. Figures and geometry
+   only — never a person's name, relationship, or life event. Keep each numbered line to one
+   concise clause and the whole prompt under ~1400 characters so nothing is cut off.
 
 Return ONLY valid JSON. No markdown fences, no preamble.
 
@@ -167,16 +173,16 @@ Return ONLY valid JSON. No markdown fences, no preamble.
 
 RENDER TEMPLATE — return this filled in as "midjourney_prompt". Keep the opening and closing sentences verbatim; replace only the numbered list:
 
-A highly detailed, photorealistic image of a tall, freestanding negative-space story pole [the pole height in feet, from the user message] feet tall, carved fully in the round as a three-dimensional sculpture — a sculpture in the round, NOT a flat relief panel — every figure defined by what is cut away as much as by what remains, deep negative-space voids doing half the sculptural work — hand-carved from a single massive western red cedar log with visible natural wood grain, knots, and aged texture. The pole stands vertically in the center of the frame, fully visible from base to the very top with generous empty space around it so the entire sculpture is completely in view without any cropping.
+A photorealistic tall, freestanding western red cedar story pole [the pole height in feet, from the user message] feet tall, carved fully in the round as a three-dimensional sculpture (in the round, NOT a flat relief panel), standing vertically, entire pole visible base to crown, no cropping. It bears EXACTLY [the total number of figures] separate carved figures stacked one directly above another — render all [the total number of figures], each a distinct carving with clear wood between neighbours, none skipped, merged, or omitted.
 
-The carvings ascend in precise order from the base upward exactly as follows — every figure listed MUST appear in the carving, with no omissions, no merging, and no reordering:
+From the base (1) up to the crown, in this exact order — one separate figure per line, no omissions and no reordering:
 1. [base figure — named animal or form, with its pose]
 2. [next figure — named animal or form, with its pose]
 N. [crown figure — named animal or form, with its pose]
 
-Each carving is ${CRAFT}. The wood shows natural variation in color, weathering, and patina.
+Each carving is ${CRAFT}. The wood shows natural variation in color and patina.
 
-Every figure listed above is carved and visible on the pole — all of them, none skipped, dropped, or left out. Photorealistic, 8k resolution, sharp focus on every detail, accurate proportions, museum-quality documentation style, no cropping, full vertical composition, entire pole visible end-to-end.
+EXACTLY [the total number of figures] separate carved figures, one for every numbered line above — all carved and visible, none skipped or left out. Photorealistic, 8k, sharp focus, accurate proportions, full vertical composition, no cropping.
 `;
 }
 
@@ -188,6 +194,19 @@ Figure budget: ${budget} slots.
 <story>
 ${story}
 </story>`;
+}
+
+// Image models drop figures on tall, busy poles. Don't trust the parser to
+// phrase the count right — guarantee it. Fill any leftover [the total number of
+// figures] placeholder with the real count, and if the exact count still isn't
+// stated up front, lead with it so it's read first and survives truncation.
+export function enforceFigureCount(prompt, n) {
+  if (!prompt || !n) return prompt || '';
+  let out = prompt.split('[the total number of figures]').join(String(n));
+  if (!out.slice(0, 140).includes(String(n))) {
+    out = `A carved story pole bearing EXACTLY ${n} separate figures stacked base to crown — render all ${n}, none skipped, merged, or omitted. ${out}`;
+  }
+  return out;
 }
 
 // Geometry only. No names, no derivation, no plaque. This is the studio copy.
@@ -316,6 +335,13 @@ export default async function handler(req, res) {
       return res
         .status(502)
         .json({ error: 'The parser returned something malformed. Try again.' });
+    }
+
+    // Lock the exact figure count into the render prompt before it's rendered,
+    // shown, or copied — so the carve sheet, the on-page prompt, and the image
+    // all agree, and the renderer stops dropping figures.
+    if (pole && Array.isArray(pole.figures)) {
+      pole.midjourney_prompt = enforceFigureCount(pole.midjourney_prompt, pole.figures.length);
     }
 
     const carve = toCarveSheet(pole);
