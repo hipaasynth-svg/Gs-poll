@@ -4,7 +4,11 @@ import { isAuthed } from '../lib/auth.js';
 const MODEL = 'claude-sonnet-5';
 const IMAGE_MODEL = 'grok-imagine-image-quality';   // xAI (Grok Imagine) renders the carving
 // Cheaper alternative: 'grok-imagine-image' (~$0.02 vs ~$0.055 per image)
-const IMAGE_PROMPT_MAX = 1600;        // xAI image prompt length cap (headroom for the template)
+// Our own safety slice on the prompt we send to xAI — NOT xAI's documented cap
+// (that isn't published). The prompt is engineered to fit well under this with
+// the whole figure list up front, so this rarely bites; it's just a backstop
+// against a runaway prompt. Raised to 2000 for headroom on very long lists.
+const IMAGE_PROMPT_MAX = 2000;
 const CAPACITY = { 6: 4, 8: 5, 10: 7, 12: 8 };
 
 const MIN_STORY = 200;
