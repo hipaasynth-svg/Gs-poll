@@ -7,8 +7,11 @@ const IMAGE_MODEL = 'grok-imagine-image-quality';   // xAI (Grok Imagine) render
 // Our own safety slice on the prompt we send to xAI — NOT xAI's documented cap
 // (that isn't published). The prompt is engineered to fit well under this with
 // the whole figure list up front, so this rarely bites; it's just a backstop
-// against a runaway prompt. Raised to 2000 for headroom on very long lists.
-const IMAGE_PROMPT_MAX = 2000;
+// against a runaway prompt. Raised to 2600: the fully-in-the-round render
+// scaffold is deliberately more descriptive, so the fixed opening/closing plus a
+// full 8-figure list needs the headroom to survive without the closing (and its
+// final figure-count reminder) getting sliced off.
+const IMAGE_PROMPT_MAX = 2600;
 const CAPACITY = { 6: 4, 8: 5, 10: 7, 12: 8 };
 
 const MIN_STORY = 200;
@@ -70,7 +73,7 @@ function rateLimited(ip) {
 
 // The studio carving rules — the "cut minimums and relevant topics" — woven into every
 // rendered figure.
-const CRAFT = `a bold form carved in the round from the log — deep negative-space cuts, hard outline, radical simplification, symbol over anatomy; NOT relief, not a totem, not tribal or formline; no fur, feather, scale, pupil, or ornament detail; vertical wood grain, hard side lighting, deep shadows, neutral grey background`;
+const CRAFT = `a bold form carved fully in the round as true free-standing sculpture — NEVER relief, never a flat panel; the volume bursts outward from the central shaft with aggressive undercutting, deep voids cut clean through the wood, and masses that almost detach into open space; powerful, exaggerated, muscular mass, interlocking shapes, and a strong silhouette read from every angle; radical simplification, symbol over anatomy; NOT a totem, not tribal or formline; no fur, feather, scale, pupil, or ornament detail; vertical wood grain, hard raking side light, deep carved shadows, neutral grey background`;
 
 // The stable half of the prompt — canon + instructions. Identical on every
 // request, so it caches. Story / height / budget live in the user message.
@@ -128,7 +131,7 @@ Do this work in order:
    the empty form, the sun, ...), each with a short description of its pose, gaze, limbs, and
    mouth. The number of numbered lines must equal that count exactly. Figures and geometry
    only — never a person's name, relationship, or life event. Keep each numbered line to one
-   concise clause and the whole prompt under ~1400 characters so nothing is cut off.
+   concise clause so the whole prompt stays under ~2400 characters and nothing is cut off.
 
 Return ONLY valid JSON. No markdown fences, no preamble.
 
@@ -168,12 +171,12 @@ Return ONLY valid JSON. No markdown fences, no preamble.
   "overflow_note": "",
   "uncut_wood": "what the pole leaves uncarved and why, or null",
   "plaque": "full prose, base to crown",
-  "midjourney_prompt": "the filled render template — one prompt, base to crown, every figure a numbered line, under ~1400 chars"
+  "midjourney_prompt": "the filled render template — one prompt, base to crown, every figure a numbered line, under ~2400 chars"
 }
 
 RENDER TEMPLATE — return this filled in as "midjourney_prompt". Keep the opening and closing sentences verbatim; replace only the numbered list:
 
-A photorealistic tall, freestanding western red cedar story pole [the pole height in feet, from the user message] feet tall, carved fully in the round as a three-dimensional sculpture (in the round, NOT a flat relief panel), standing vertically, entire pole visible base to crown, no cropping. It bears EXACTLY [the total number of figures] separate carved figures stacked one directly above another — render all [the total number of figures], each a distinct carving with clear wood between neighbours, none skipped, merged, or omitted.
+An extremely dramatic, photorealistic tall, freestanding western red cedar story pole [the pole height in feet, from the user message] feet tall, carved fully in the round as true three-dimensional sculpture (fully in the round, NOT a flat relief panel and NOT surface relief), standing vertically, entire pole visible base to crown, no cropping. Forms burst outward from the central shaft with aggressive undercutting, deep voids, and volumes that almost detach into space — powerful exaggerated mass, interlocking shapes, and strong silhouettes from every angle. It bears EXACTLY [the total number of figures] separate carved figures stacked one directly above another — render all [the total number of figures], each a distinct fully-rounded carving with clear wood between neighbours, none skipped, merged, or omitted.
 
 From the base (1) up to the crown, in this exact order — one separate figure per line, no omissions and no reordering:
 1. [base figure — named animal or form, with its pose]
@@ -182,7 +185,7 @@ N. [crown figure — named animal or form, with its pose]
 
 Each carving is ${CRAFT}. The wood shows natural variation in color and patina.
 
-EXACTLY [the total number of figures] separate carved figures, one for every numbered line above — all carved and visible, none skipped or left out. Photorealistic, 8k, sharp focus, accurate proportions, full vertical composition, no cropping.
+Deep shadows and explosive three-dimensional energy, dramatic raking light, a strong silhouette that reads from every angle — while still functioning as a single vertical story pole. EXACTLY [the total number of figures] separate carved figures, one for every numbered line above — all carved and visible, none skipped or left out. Photorealistic, 8k, sharp focus, accurate proportions, full vertical composition, no cropping.
 `;
 }
 
